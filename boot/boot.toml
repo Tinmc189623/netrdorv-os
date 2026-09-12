@@ -1,0 +1,28 @@
+# NetrdorvOS 启动配置 - 由 Limine 作为模块加载
+# 内核启动后读取此文件配置驱动和分辨率
+
+[boot]
+kernel = "Nexera Kernel"
+version = "0.1.0"
+
+[display]
+width = 480
+height = 800
+bpp = 16
+
+[drivers]
+# 开机自动加载的驱动模块（按顺序）
+load = [
+    "uart.ko",
+    "display.ko",
+    "touch.ko",
+    "audio_i2s.ko",
+    "wifi_sdio.ko",
+]
+
+[scheduler]
+tick_hz = 100
+max_tasks = 64
+
+[memory]
+heap_size = "32M"

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NetrdorvOS 项目架构与开发路线</title>
+<style>
+  :root{
+    --ink:#1f2937; --muted:#6b7280; --line:#d7dde6;
+    --app:#0f766e; --sys:#0369a1; --drv:#b45309; --ker:#7c3aed; --hwd:#475569;
+    --bg:#f8fafc;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;background:var(--bg);color:var(--ink);padding:28px 20px;line-height:1.55;}
+  .wrap{max-width:1080px;margin:0 auto;}
+  header{border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom:22px;}
+  header h1{font-size:26px;letter-spacing:.5px;}
+  header p{color:var(--muted);margin-top:6px;font-size:14px;}
+  .sec{margin-bottom:30px;}
+  .sec h2{font-size:17px;border-left:5px solid var(--ink);padding-left:10px;margin-bottom:14px;}
+  .badge{display:inline-block;font-size:12px;padding:2px 8px;border-radius:10px;background:#e5e7eb;color:#374151;margin-right:6px;}
+  /* ---- 分层架构 ---- */
+  .layer{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:10px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+  .layer .tag{flex:0 0 150px;color:#fff;padding:12px 14px;font-weight:600;font-size:14px;display:flex;align-items:center;}
+  .layer .mods{flex:1;padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .mod{font-size:13px;background:#f1f5f9;border:1px solid var(--line);border-radius:6px;padding:4px 10px;color:#334155;}
+  .mod.done{background:#ecfdf5;border-color:#a7f3d0;color:#065f46;}
+  .layer .tag span{width:100%;}
+  .arrow-row{text-align:center;color:var(--muted);font-size:13px;margin:4px 0 10px;}
+  .arrow-row .t{display:inline-block;transform:rotate(90deg);font-size:15px;margin-right:6px;}
+  /* ---- 阶段路线 ---- */
+  .stages{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;}
+  .stage{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,.05);position:relative;}
+  .stage .num{font-size:12px;color:#fff;background:var(--sys);border-radius:12px;padding:2px 10px;display:inline-block;font-weight:600;}
+  .stage.done .num{background:#059669;}
+  .stage h4{font-size:14px;margin:8px 0 6px;}
+  .stage ul{list-style:none;font-size:12px;color:var(--muted);}
+  .stage li{padding:2px 0;border-bottom:1px dashed #eef2f7;}
+  .stage li:last-child{border-bottom:none;}
+  .stage .dir{display:block;margin-top:8px;font-size:11px;font-family:Consolas,monospace;color:#7c3aed;background:#f5f3ff;border-radius:4px;padding:3px 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .stages .stage.done{border-color:#a7f3d0;}
+  /* ---- 技术栈 ---- */
+  .stack{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;}
+  .card h4{font-size:14px;margin-bottom:8px;}
+  .card p,.card li{font-size:13px;color:#374151;}
+  .card ul{list-style:none;margin-top:4px;}
+  .card li{padding:2px 0;}
+  .bar{height:12px;border-radius:6px;background:#e5e7eb;overflow:hidden;margin:6px 0 4px;}
+  .bar i{display:block;height:100%;}
+  .no{color:#b91c1c;}
+  .foot{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;font-size:12px;color:var(--muted);}
+  .foot a{color:var(--sys);}
+  @media(max-width:760px){ .stages{grid-template-columns:repeat(2,1fr);} .stack{grid-template-columns:1fr;} .layer .tag{flex-basis:110px;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>NetrdorvOS · 项目架构与开发路线</h1>
+    <p>RISC-V 自制收音机操作系统（适配 Milk-V DuoS RV64）｜技术栈：<b>95% C + 5% RV64 汇编</b>，禁止 Rust / Python / Java / 脚本语言</p>
+  </header>
+
+  <!-- 分层架构 -->
+  <section class="sec">
+    <h2>一、系统分层架构（自顶向下）</h2>
+
+    <div class="layer"><div class="tag" style="background:var(--app);"><span>① 应用层</span></div>
+      <div class="mods"><span class="mod">收音机 UI</span><span class="mod">电台管理</span><span class="mod">音量控制</span><span class="mod">触控交互</span></div></div>
+    <div class="arrow-row"><span class="t">▼</span>调用</div>
+
+    <div class="layer"><div class="tag" style="background:var(--sys);"><span>② 系统层</span></div>
+      <div class="mods"><span class="mod">GUI 引擎</span><span class="mod">音频解码（MP3/AAC）</span><span class="mod">TCP/IP · HTTP 客户端</span><span class="mod">任务调度</span></div></div>
+    <div class="arrow-row"><span class="t">▼</span>调用</div>
+
+    <div class="layer"><div class="tag" style="background:var(--drv);"><span>③ 驱动层</span></div>
+      <div class="mods"><span class="mod">MIPI 显示</span><span class="mod">I2C 触控</span><span class="mod">I2S + ES8311 音频</span><span class="mod">SDIO WiFi</span><span class="mod">串口</span><span class="mod">定时器</span></div></div>
+    <div class="arrow-row"><span class="t">▼</span>调用</div>
+
+    <div class="layer"><div class="tag" style="background:var(--ker);"><span>④ 内核层</span></div>
+      <div class="mods"><span class="mod">MMU Sv39 内存管理</span><span class="mod">中断 / 异常处理</span><span class="mod">多任务调度器</span><span class="mod">启动 · SBI 调用</span></div></div>
+    <div class="arrow-row"><span class="t">▼</span>操作</div>
+
+    <div class="layer"><div class="tag" style="background:var(--hwd);"><span>⑤ 硬件层</span></div>
+      <div class="mods"><span class="mod">Milk-V DuoS（SG2002 · RV64GCV）</span><span class="mod">4.3" MIPI 触控屏</span><span class="mod">ES8311 + 功放 + 喇叭</span><span class="mod">锂电池 + Type-C</span></div></div>
+  </section>
+
+  <!-- 开发路线 -->
+  <section class="sec">
+    <h2>二、开发路线（6 大阶段 · 严格按顺序）</h2>
+    <div class="stages">
+      <div class="stage done">
+        <span class="num">阶段 1 ✓</span>
+        <h4>裸机启动框架</h4>
+        <ul><li>内核入口 / 栈 / BSS</li><li>Sv39 MMU</li><li>串口 · 定时器</li><li>中断异常</li></ul>
+        <span class="dir">arch/riscv64/ kernel/</span>
+      </div>
+      <div class="stage">
+        <span class="num">阶段 2</span>
+        <h4>基础内核能力</h4>
+        <ul><li>页式内存管理</li><li>多任务调度</li><li>设备驱动模型</li><li>任务队列</li></ul>
+        <span class="dir">kernel/mm/ sched/</span>
+      </div>
+      <div class="stage">
+        <span class="num">阶段 3</span>
+        <h4>屏幕与触控</h4>
+        <ul><li>MIPI 显示驱动</li><li>I2C 触控</li><li>GUI 绘图引擎</li><li>界面框架</li></ul>
+        <span class="dir">drivers/display touch/</span>
+      </div>
+      <div class="stage">
+        <span class="num">阶段 4</span>
+        <h4>音频子系统</h4>
+        <ul><li>I2S + ES8311</li><li>PCM 输出 · 音量</li><li>MP3/AAC 流式解码</li><li>缓冲队列</li></ul>
+        <span class="dir">drivers/audio/</span>
+      </div>
+      <div class="stage">
+        <span class="num">阶段 5</span>
+        <h4>WiFi + 网络拉流</h4>
+        <ul><li>SDIO WiFi</li><li>TCP/IP 协议栈</li><li>HTTP 客户端</li><li>边下边播</li></ul>
+        <span class="dir">drivers/wifi/ system/net/</span>
+      </div>
+      <div class="stage">
+        <span class="num">阶段 6</span>
+        <h4>整机成品化</h4>
+        <ul><li>触控 UI 完整逻辑</li><li>电台缓存 · 自动重连</li><li>低功耗 · 电量显示</li><li>稳定性优化</li></ul>
+        <span class="dir">app/radio/</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 技术栈 -->
+  <section class="sec">
+    <h2>三、技术选型要点</h2>
+    <div class="stack">
+      <div class="card">
+        <h4>语言构成</h4>
+        <div class="bar"><i style="width:95%;background:#059669;"></i></div>
+        <p><b>95% C</b>：内核核心 / 驱动 / 系统组件 / 上层应用</p>
+        <div class="bar"><i style="width:5%;background:#d97706;"></i></div>
+        <p><b>5% 汇编</b>：启动入口 / MMU / 中断上下文 / SBI / 特权级切换</p>
+      </div>
+      <div class="card">
+        <h4>工具链与环境</h4>
+        <ul>
+          <li>编译器：riscv64-unknown-elf-gcc</li>
+          <li>目标：rv64gc / lp64d · 裸机 freestanding</li>
+          <li>零系统依赖 · 零库依赖 · 纯自研内核</li>
+          <li>构建：Makefile → netrdorvos.elf / .bin</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>禁止项</h4>
+        <ul>
+          <li class="no">✕ Rust（裸机 RV64 适配繁琐）</li>
+          <li class="no">✕ C++（无标准库 · 虚函数开销）</li>
+          <li class="no">✕ Python / 脚本（需运行时）</li>
+          <li class="no">✕ Go / Java（不支持裸机 RV64）</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">
+    数据来源：完整开发计划（<a href="https://feishu.doubao.com/docx/VzjNd2fnDodtgRx5IZvcz5QfnSc">feishu 文档</a>）与开发语言规范（<a href="https://feishu.doubao.com/docx/TWzkdTFc7oIrX4xrOgkcsbq6nle">feishu 文档</a>）；本图为项目结构示意。阶段 1 已搭好工程骨架并通过交叉编译验证。
+  </div>
+
+</div>
+</body>
+</html>

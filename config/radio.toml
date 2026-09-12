@@ -1,0 +1,18 @@
+# NetrdorvOS 收音机应用配置
+
+[radio]
+default_station = 0
+volume = 70
+buffer_seconds = 4
+reconnect_retries = 3
+
+[stations]
+presets = [
+    "http://stream.example.com/jazz.mp3",
+    "http://stream.example.com/classic.aac",
+    "http://stream.example.com/news.mp3",
+]
+
+[network]
+protocol = "hls"  # hls / http_progressive / http_flv
+timeout_ms = 5000

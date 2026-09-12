@@ -1,0 +1,14 @@
+# 构建产物
+build/
+
+# 对象文件与临时文件
+*.o
+*.d
+*.elf
+*.bin
+*.lst
+*.map
+
+# 工具
+.vscode/
+.idea/

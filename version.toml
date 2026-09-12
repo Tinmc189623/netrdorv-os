@@ -1,0 +1,17 @@
+[kernel]
+name = "Nexera Kernel"
+shortname = "NK"
+version = "0.1.0"
+codename = "Duet"
+arch = "riscv64"
+abi = "lp64d"
+march = "rv64gc"
+
+[os]
+name = "NetrdorvOS"
+version = "0.1.0"
+target = "Milk-V DuoS (SG2002)"
+
+[build]
+toolchain = "riscv-none-elf-gcc 15.2.0"
+language = "C11 + RISC-V assembly"
